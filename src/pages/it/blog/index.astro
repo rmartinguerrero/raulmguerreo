@@ -1,0 +1,44 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+import { getLangFromUrl, useTranslations } from '../../../i18n/utils';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const posts = await getCollection('blog') as {
+  data: {
+    title: string;
+    author: string;
+    date: Date;
+    previewImage: string;
+    description: string;
+    tags: string[];
+  };
+  slug: string;
+}[];
+
+const filteredPosts = posts.filter(post => post.slug.startsWith(lang));
+
+const sortedPosts = filteredPosts.sort((a, b) => {
+  const dateA = new Date(a.data.date);
+  const dateB = new Date(b.data.date);
+  return dateB.getTime() - dateA.getTime();
+});
+---
+
+<BaseLayout title={t('nav.blog')}>
+  <h1>{t('nav.blog')}</h1>
+  <div class="grid">
+    {sortedPosts.map((post) => (
+      <div class="card">
+        <img src={post.data.previewImage} alt={post.data.title} />
+        <h2>{post.data.title}</h2>
+        <p>by {post.data.author} • {post.data.date.toLocaleDateString(lang)}</p>
+        <p>{post.data.description}</p>
+        <p>Tags: {post.data?.tags?.join(', ') ?? ''}</p>
+        <a href={`/${lang}/blog/${post.slug}`}>Guarda di piu</a>
+      </div>
+    ))}
+  </div>
+</BaseLayout>

@@ -1,5 +1,17 @@
 {
-  "extends": "astro/tsconfigs/strict",
-  "include": [".astro/types.d.ts", "**/*"],
-  "exclude": ["dist"]
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "lib": ["esnext", "dom"],
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "types": [] //  ¡Importante!  Déjalo vacío o elimina esta línea
+  },
+  "include": [
+    "src/**/*.astro",
+    "src/**/*.ts",
+    "types.d.ts" // Asegúrate de que types.d.ts esté incluido
+  ]
 }

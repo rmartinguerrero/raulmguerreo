@@ -1,0 +1,31 @@
+---
+import { getEntry, getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const pages = await getCollection('blog');
+
+  const paths = pages.map(page => {
+    const [lang, ...slug] = page.slug.split('/'); // Esto sigue igual
+    return { params: { lang, slug: slug.join('/') }, props: page };
+  });
+
+  return paths;
+}
+
+const { lang, slug } = Astro.params;
+
+const page = await getEntry('blog', slug); // ¡Aquí el cambio crucial!
+// Este cambio es fundamental. Ya no se incluye el idioma en getEntry, ya que el slug lo incluye.
+
+if (!page) {
+  return Astro.redirect('/404');
+}
+
+const formattedDate = page.data.date.toLocaleString(lang);
+
+const { Content } = await page.render();
+---
+
+<h1>{page.data.title}</h1>
+<p>by {page.data.author} • {formattedDate}</p>
+<Content />
