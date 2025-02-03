@@ -1,43 +1,35 @@
 ---
 import BaseLayout from '../../../layouts/BaseLayout.astro';
-import { getCollection } from 'astro:content';
 import { getLangFromUrl, useTranslations } from '../../../i18n/utils';
+import type { Post } from '../../../types';
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 
-const posts = await getCollection('blog') as {
-  data: {
-    title: string;
-    author: string;
-    date: Date;
-    previewImage: string;
-    description: string;
-    tags: string[];
-  };
-  slug: string;
+const allPosts = Object.values(import.meta.glob('../posts/*.md', { eager: true })) as {
+  file: string;
+  data: Post;
 }[];
 
-const filteredPosts = posts.filter(post => post.slug.startsWith(lang));
+const filteredPosts = allPosts
+  .filter(post => post.file.startsWith(`./${lang}/`))
+  .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime());
 
-const sortedPosts = filteredPosts.sort((a, b) => {
-  const dateA = new Date(a.data.date);
-  const dateB = new Date(b.data.date);
-  return dateB.getTime() - dateA.getTime();
-});
+const pageTitle = t('nav.blog');
 ---
 
-<BaseLayout title={t('nav.blog')}>
-  <h1>{t('nav.blog')}</h1>
+<BaseLayout pageTitle={pageTitle}>
+  <h1>{pageTitle}</h1>
+  <p>{t('blog.description')}</p>
   <div class="grid">
-    {sortedPosts.map((post) => (
+    {filteredPosts.map((post) => (
       <div class="card">
         <img src={post.data.previewImage} alt={post.data.title} />
         <h2>{post.data.title}</h2>
         <p>by {post.data.author} • {post.data.date.toLocaleDateString(lang)}</p>
         <p>{post.data.description}</p>
         <p>Tags: {post.data?.tags?.join(', ') ?? ''}</p>
-        <a href={`/${lang}/blog/${post.slug}`}>Guarda di piu</a>
+        <a href={`/${lang}/blog/posts/${post.file.split('/').pop().slice(0, -3)}`}>{t('blog.readMore')}</a>
       </div>
     ))}
   </div>

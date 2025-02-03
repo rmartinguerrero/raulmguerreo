@@ -1,11 +1,11 @@
 ---
-title: Título del post
-author: Autor del post
-date: 2024-08-22T10:00:00Z  # Fecha y hora de publicación (formato ISO 8601)
-previewImage: /images/preview1.jpg # Ruta a la imagen de preview
-description: Breve descripción del post
-slug: post1ES  <-- ¡SOLO el nombre del post!
-tags: [] # Array vacío si no hay tags
+title: Título del post 1
+author: Autor
+date: 2024-08-29T10:00:00Z
+previewImage: /images/preview1.jpg
+description: Descripción del post 1
+tags: []
+slug: post1
 ---
 
-<h1>TEST</h1>
+##CONTENIDO ES##
