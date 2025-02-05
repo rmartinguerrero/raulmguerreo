@@ -6,13 +6,14 @@ import type { Post } from '../../../types';
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 
-const allPosts = Object.values(import.meta.glob('../posts/*.md', { eager: true })) as {
+const allPosts = Object.values(import.meta.glob('../../../content/blog/**.md', { eager: true })) as {
+
   file: string;
   data: Post;
 }[];
 
 const filteredPosts = allPosts
-  .filter(post => post.file.startsWith(`./${lang}/`))
+  .filter(post => post.file.includes(`/blog/${lang}/`))
   .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime());
 
 const pageTitle = t('nav.blog');
@@ -29,7 +30,7 @@ const pageTitle = t('nav.blog');
         <p>by {post.data.author} • {post.data.date.toLocaleDateString(lang)}</p>
         <p>{post.data.description}</p>
         <p>Tags: {post.data?.tags?.join(', ') ?? ''}</p>
-        <a href={`/${lang}/blog/posts/${post.file.split('/').pop().slice(0, -3)}`}>{t('blog.readMore')}</a>
+        <a href={`/${lang}/blog/${post.data.slug}`}>{t('blog.readMore')}</a>
       </div>
     ))}
   </div>
