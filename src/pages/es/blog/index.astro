@@ -6,16 +6,22 @@ import type { Post } from '../../../types';
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 
-const allPosts = Object.values(import.meta.glob('../../../content/blog/**.md', { eager: true })) as {
 
+//IA
+
+const allPosts = Object.values(import.meta.glob('../../../content/blog/**.md', { eager: true })) as {
   file: string;
   data: Post;
 }[];
 
-const filteredPosts = allPosts
-  .filter(post => post.file.includes(`/blog/${lang}/`))
-  .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime());
+console.log('Todos los posts cargados:', allPosts);
 
+// Filtra y ordena los posts
+const filteredPosts = allPosts
+  .filter(post => post.data && post.data.frontmatter) // Asegúrate de que hay `frontmatter`
+  .sort((a, b) => new Date(b.data.frontmatter.date).getTime() - new Date(a.data.frontmatter.date).getTime());
+
+// FIN IA
 const pageTitle = t('nav.blog');
 ---
 
@@ -23,15 +29,25 @@ const pageTitle = t('nav.blog');
   <h1>{pageTitle}</h1>
   <p>{t('blog.description')}</p>
   <div class="grid">
-    {filteredPosts.map((post) => (
-      <div class="card">
-        <img src={post.data.previewImage} alt={post.data.title} />
-        <h2>{post.data.title}</h2>
-        <p>by {post.data.author} • {post.data.date.toLocaleDateString(lang)}</p>
-        <p>{post.data.description}</p>
-        <p>Tags: {post.data?.tags?.join(', ') ?? ''}</p>
-        <a href={`/${lang}/blog/${post.data.slug}`}>{t('blog.readMore')}</a>
-      </div>
-    ))}
+    {filteredPosts.map((post) => {
+      const data = post.data?.frontmatter;  // Usamos optional chaining
+      console.log('Post data:', data);  // Esto debería mostrar los datos de cada post
+
+      if (!data) return null; // Si no hay datos, no renderizamos
+
+      return (
+        <div class="card" key={post.file}>
+          <img src={data.previewImage?.length ? data.previewImage : '/images/default.jpg'} 
+               alt={data.title || 'Post sin título'} />
+          <h2>{data.title || 'Título desconocido'}</h2>
+          <p>by {data.author || 'Autor desconocido'} • 
+             {data.date ? new Date(data.date).toLocaleDateString(lang) : 'Fecha no disponible'}</p>
+          <p>{data.description || 'Sin descripción'}</p>
+          <p>Tags: {data.tags?.length ? data.tags.join(', ') : 'Sin etiquetas'}</p>
+          <a href={`/${lang}/blog/${data.slug || '#'}`}>{t('blog.readMore')}</a>
+        </div>
+      );
+    })}
   </div>
 </BaseLayout>
+
