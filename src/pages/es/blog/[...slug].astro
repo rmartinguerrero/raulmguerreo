@@ -4,16 +4,23 @@ import { getCollection, getEntry } from 'astro:content';
 export async function getStaticPaths() {
   const posts = await getCollection('blog');
 
-  return posts.map(post => {
-    const [lang, ...slugParts] = post.slug.split('/'); // Separa idioma y slug
-    return {
-      params: { lang, slug: slugParts.join('/') }, // Une las partes restantes para formar el slug
-      props: { post },
-    };
-  });
+  return posts
+    .filter(post => post.slug.includes('/')) // Asegurar que el slug tiene el idioma
+    .map(post => {
+      const [lang, ...slugParts] = post.slug.split('/'); // Separa idioma y slug
+      return {
+        params: { lang, slug: slugParts.join('/') }, // Une las partes restantes para formar el slug
+        props: { post },
+      };
+    });
 }
 
 const { lang, slug } = Astro.params;
+
+if (!lang || !slug) {
+  throw new Error("Falta el idioma o el slug en la URL.");
+}
+
 const post = await getEntry('blog', `${lang}/${slug}`);
 
 if (!post) {

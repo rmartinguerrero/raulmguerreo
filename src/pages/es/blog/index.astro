@@ -12,7 +12,7 @@ const filteredPosts = posts.filter(post => post.slug.startsWith(`${lang}/`));
 <BaseLayout>
   <ul>
     {filteredPosts.map((post) => {
-      const postSlug = post.slug.split('/').slice(1).join('/'); // Elimina el idioma del slug
+      const postSlug = posts.slug.split('/').slice(1).join('/'); // Elimina el idioma del slug
       return (
         <li>
           <a href={`/${lang}/blog/${postSlug}/`}>{post.data.title}</a>

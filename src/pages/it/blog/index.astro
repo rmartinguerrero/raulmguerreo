@@ -1,27 +1,23 @@
 ---
 import BaseLayout from '../../../layouts/BaseLayout.astro';
-import { getLangFromUrl, useTranslations } from '../../../i18n/utils';
-
 import { getCollection } from 'astro:content';
+import { getLangFromUrl } from '../../../i18n/utils';
 
 const posts = await getCollection('blog');
 
 const lang = getLangFromUrl(Astro.url);
-const t = useTranslations(lang);
+const filteredPosts = posts.filter(post => post.slug.startsWith(`${lang}/`));
 ---
 
 <BaseLayout>
-  <main>
-    <h1>Últimos posts</h1>
-    <div class="post-grid">
-      {posts.map(post => (
-        <article key={post.id} class="post-card">
-          {post.data.image && <img src={post.data.image} alt={post.data.title} />}
-          <h2>{post.data.title}</h2>
-          <p><small>{post.data.date} - {post.data.author}</small></p>
-        </article>
-      ))}
-    </div>
-  </main>
+  <ul>
+    {filteredPosts.map((post) => {
+      const postSlug = post.slug.split('/').slice(1).join('/'); // Elimina el idioma del slug
+      return (
+        <li>
+          <a href={`/${lang}/blog/${postSlug}/`}>{post.data.title}</a>
+        </li>
+      );
+    })}
+  </ul>
 </BaseLayout>
-
