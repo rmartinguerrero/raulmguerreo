@@ -1,28 +1,34 @@
 ---
-import { getEntry, getCollection } from 'astro:content';
+import { getCollection, getEntry } from 'astro:content';
 
 export async function getStaticPaths() {
-  const pages = await getCollection('blog');
+  const posts = await getCollection('blog');
 
-  return pages.map(page => ({
-    params: { lang: page.slug.split('/')[0], slug: page.slug.split('/').slice(1).join('/') },
-    props: page,
-  }));
+  return posts.map(post => {
+    const [lang, ...slugParts] = post.slug.split('/'); // Separa idioma y slug
+    return {
+      params: { lang, slug: slugParts.join('/') }, // Une las partes restantes para formar el slug
+      props: { post },
+    };
+  });
 }
 
 const { lang, slug } = Astro.params;
+const post = await getEntry('blog', `${lang}/${slug}`);
 
-const page = await getEntry('blog', `${lang}/${slug}`);
-
-if (!page) {
+if (!post) {
   return Astro.redirect('/404');
 }
 
-const formattedDate = new Date(page.data.date).toLocaleDateString(lang);
-
-const { Content } = await page.render();
+const formattedDate = new Date(post.data.date).toLocaleDateString(lang);
+const { Content } = await post.render();
 ---
 
-<h1>{page.data.title}</h1>
-<p>by {page.data.author} • {formattedDate}</p>
-<Content />
+<BaseLayout>
+  <article>
+    <h1>{post.data.title}</h1>
+    <p>by {post.data.author} • {formattedDate}</p>
+    {post.data.previewImage && <img src={post.data.previewImage} alt={post.data.title} />}
+    <Content />
+  </article>
+</BaseLayout>

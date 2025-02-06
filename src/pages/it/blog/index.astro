@@ -1,36 +1,27 @@
 ---
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import { getLangFromUrl, useTranslations } from '../../../i18n/utils';
-import type { Post } from '../../../types';
+
+import { getCollection } from 'astro:content';
+
+const posts = await getCollection('blog');
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
-
-const allPosts = Object.values(import.meta.glob('../posts/*.md', { eager: true })) as {
-  file: string;
-  data: Post;
-}[];
-
-const filteredPosts = allPosts
-  .filter(post => post.file.startsWith(`./${lang}/`))
-  .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime());
-
-const pageTitle = t('nav.blog');
 ---
 
-<BaseLayout pageTitle={pageTitle}>
-  <h1>{pageTitle}</h1>
-  <p>{t('blog.description')}</p>
-  <div class="grid">
-    {filteredPosts.map((post) => (
-      <div class="card">
-        <img src={post.data.previewImage} alt={post.data.title} />
-        <h2>{post.data.title}</h2>
-        <p>by {post.data.author} • {post.data.date.toLocaleDateString(lang)}</p>
-        <p>{post.data.description}</p>
-        <p>Tags: {post.data?.tags?.join(', ') ?? ''}</p>
-        <a href={`/${lang}/blog/posts/${post.file.split('/').pop().slice(0, -3)}`}>{t('blog.readMore')}</a>
-      </div>
-    ))}
-  </div>
+<BaseLayout>
+  <main>
+    <h1>Últimos posts</h1>
+    <div class="post-grid">
+      {posts.map(post => (
+        <article key={post.id} class="post-card">
+          {post.data.image && <img src={post.data.image} alt={post.data.title} />}
+          <h2>{post.data.title}</h2>
+          <p><small>{post.data.date} - {post.data.author}</small></p>
+        </article>
+      ))}
+    </div>
+  </main>
 </BaseLayout>
+

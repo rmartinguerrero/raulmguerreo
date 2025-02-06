@@ -1,53 +1,23 @@
 ---
 import BaseLayout from '../../../layouts/BaseLayout.astro';
-import { getLangFromUrl, useTranslations } from '../../../i18n/utils';
-import type { Post } from '../../../types';
+import { getCollection } from 'astro:content';
+import { getLangFromUrl } from '../../../i18n/utils';
+
+const posts = await getCollection('blog');
 
 const lang = getLangFromUrl(Astro.url);
-const t = useTranslations(lang);
-
-
-//IA
-
-const allPosts = Object.values(import.meta.glob('../../../content/blog/**.md', { eager: true })) as {
-  file: string;
-  data: Post;
-}[];
-
-console.log('Todos los posts cargados:', allPosts);
-
-// Filtra y ordena los posts
-const filteredPosts = allPosts
-  .filter(post => post.data && post.data.frontmatter) // Asegúrate de que hay `frontmatter`
-  .sort((a, b) => new Date(b.data.frontmatter.date).getTime() - new Date(a.data.frontmatter.date).getTime());
-
-// FIN IA
-const pageTitle = t('nav.blog');
+const filteredPosts = posts.filter(post => post.slug.startsWith(`${lang}/`));
 ---
 
-<BaseLayout pageTitle={pageTitle}>
-  <h1>{pageTitle}</h1>
-  <p>{t('blog.description')}</p>
-  <div class="grid">
+<BaseLayout>
+  <ul>
     {filteredPosts.map((post) => {
-      const data = post.data?.frontmatter;  // Usamos optional chaining
-      console.log('Post data:', data);  // Esto debería mostrar los datos de cada post
-
-      if (!data) return null; // Si no hay datos, no renderizamos
-
+      const postSlug = post.slug.split('/').slice(1).join('/'); // Elimina el idioma del slug
       return (
-        <div class="card" key={post.file}>
-          <img src={data.previewImage?.length ? data.previewImage : '/images/default.jpg'} 
-               alt={data.title || 'Post sin título'} />
-          <h2>{data.title || 'Título desconocido'}</h2>
-          <p>by {data.author || 'Autor desconocido'} • 
-             {data.date ? new Date(data.date).toLocaleDateString(lang) : 'Fecha no disponible'}</p>
-          <p>{data.description || 'Sin descripción'}</p>
-          <p>Tags: {data.tags?.length ? data.tags.join(', ') : 'Sin etiquetas'}</p>
-          <a href={`/${lang}/blog/${data.slug || '#'}`}>{t('blog.readMore')}</a>
-        </div>
+        <li>
+          <a href={`/${lang}/blog/${postSlug}/`}>{post.data.title}</a>
+        </li>
       );
     })}
-  </div>
+  </ul>
 </BaseLayout>
-
